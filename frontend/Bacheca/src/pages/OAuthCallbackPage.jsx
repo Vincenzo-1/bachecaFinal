@@ -32,9 +32,9 @@ const OAuthCallbackPage = () => {
     // Controlla se è presente un parametro 'error' nella query string.
     if (queryParams.get('error')) {
       // Se c'è un errore (es. l'utente ha negato l'accesso), logga l'errore e reindirizza
-      // l'utente alla pagina di login con un messaggio di errore appropriato.
+      // l'utente alla HomePage con un messaggio di errore appropriato.
       console.error('Errore OAuth:', queryParams.get('error'));
-      navigate('/login?error=' + queryParams.get('error'));
+      navigate('/?error=' + queryParams.get('error')); // Reindirizza a HomePage con parametro di errore
       return; // Esce dall'effetto per evitare ulteriori elaborazioni.
     }
 
@@ -69,9 +69,9 @@ const OAuthCallbackPage = () => {
             // o che l'utente non ha completato passaggi necessari (es. scelta del ruolo se è un nuovo utente OAuth).
             // Logga un messaggio per debug.
             console.log('OAuth Callback: Utente non autenticato dopo refresh. User:', user);
-            // Reindirizza l'utente alla pagina di login con un messaggio di errore.
+            // Reindirizza l'utente alla HomePage con un messaggio di errore.
             // Una gestione più avanzata potrebbe reindirizzare a una pagina "Completa Profilo" o "Scegli Ruolo".
-            navigate('/login?error=oauth_callback_failed');
+            navigate('/?error=oauth_callback_failed'); // Reindirizza a HomePage
         }
     }
     // Dipendenze dell'effetto.

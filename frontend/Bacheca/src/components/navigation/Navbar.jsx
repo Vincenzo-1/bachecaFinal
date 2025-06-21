@@ -6,6 +6,10 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 // Importa l'hook personalizzato useAuth per accedere allo stato di autenticazione e ai dati dell'utente.
 import useAuth from '../../hooks/useAuth';
+// Importa il componente GoogleLoginButton.
+import GoogleLoginButton from '../auth/GoogleLoginButton';
+// Importa la funzione per reindirizzare a Google OAuth.
+import { redirectToGoogleOAuth } from '../../services/api/authService';
 
 // Definizione del componente funzionale Navbar.
 // Questo componente renderizza la barra di navigazione principale dell'applicazione.
@@ -15,6 +19,11 @@ const Navbar = () => {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
   // Hook per la navigazione programmatica, utilizzato per reindirizzare dopo il logout.
   const navigate = useNavigate();
+
+  // Funzione per gestire il login con Google.
+  const handleGoogleLogin = () => {
+    redirectToGoogleOAuth();
+  };
 
   // Funzione asincrona per gestire il logout dell'utente.
   const handleLogout = async () => {
