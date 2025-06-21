@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 // Importa useParams per accedere ai parametri della rotta URL (es. l'ID dell'annuncio) e Link per la navigazione.
 import { useParams, Link } from 'react-router-dom';
 // Importa la funzione API per ottenere la lista dei candidati per un annuncio specifico.
-import { getApplicantsForJob } from '../services/api/applicationService';
+import { getCandidaturePerAnnuncio as getApplicantsForJob } from '../services/api/candidatureService.js';
 
 // Definizione del componente funzionale ViewApplicantsPage.
 // Questa pagina è destinata agli utenti 'azienda' per visualizzare i candidati a un loro annuncio.

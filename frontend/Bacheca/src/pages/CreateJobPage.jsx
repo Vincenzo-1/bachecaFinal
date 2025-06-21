@@ -5,7 +5,7 @@ import React, { useState, useEffect } from 'react';
 // Importa useNavigate da react-router-dom per reindirizzare l'utente dopo la creazione dell'annuncio.
 import { useNavigate } from 'react-router-dom';
 // Importa la funzione createJob dal servizio API per inviare i dati del nuovo annuncio al backend.
-import { createJob } from '../services/api/jobService';
+import { creaLavoro as createJob } from '../services/api/lavoroService.js';
 // Importa l'hook useAuth per accedere ai dati dell'utente autenticato (es. per precompilare il nome azienda).
 import useAuth from '../hooks/useAuth';
 

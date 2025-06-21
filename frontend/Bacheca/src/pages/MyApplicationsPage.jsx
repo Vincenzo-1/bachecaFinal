@@ -3,7 +3,7 @@
 // Importa React e gli hook useState, useEffect, useCallback per la gestione dello stato e del ciclo di vita.
 import React, { useState, useEffect, useCallback } from 'react';
 // Importa la funzione API per ottenere le candidature inviate dall'utente autenticato.
-import { getMyApplications } from '../services/api/applicationService';
+import { getCandidatureFatte as getMyApplications } from '../services/api/candidatureService.js';
 // Importa Link da react-router-dom per permettere la navigazione, ad esempio, alla pagina degli annunci.
 import { Link } from 'react-router-dom';
 
