@@ -5,9 +5,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 // Importa Link da react-router-dom per la navigazione.
 import { Link } from 'react-router-dom';
 // Importa la funzione API per ottenere tutti gli annunci di lavoro.
-import { getAllJobs } from '../services/api/jobService';
+import { getTuttiLavori as getAllJobs } from '../services/api/lavoroService.js';
 // Importa la funzione API per creare una nuova candidatura.
-import { createApplication } from '../services/api/applicationService';
+import { creazioneCandidature as createApplication } from '../services/api/candidatureService.js';
 // Importa l'hook useAuth per accedere allo stato di autenticazione e ai dati dell'utente.
 import useAuth from '../hooks/useAuth';
 // Importa i componenti Modal, Button, Form, Alert da react-bootstrap per creare la modale di candidatura.

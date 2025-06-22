@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 // Importa Link da react-router-dom per la navigazione.
 import { Link } from 'react-router-dom';
 // Importa le funzioni API per ottenere e eliminare gli annunci dell'azienda.
-import { getCompanyJobs, deleteJobById } from '../services/api/jobService';
+import { getCompanyJobs, rimuoviLavoroDaId as deleteJobById } from '../services/api/lavoroService.js';
 // Importa useAuth per accedere eventualmente ai dati dell'utente; qui è commentato perché non strettamente necessario
 // dato che le API sono già protette dal backend e restituiscono dati specifici dell'utente autenticato.
 // import useAuth from '../hooks/useAuth';
