@@ -3,9 +3,11 @@
 // Importa React e gli hook useState, useEffect, useCallback per la gestione dello stato e del ciclo di vita.
 import React, { useState, useEffect, useCallback } from 'react';
 // Importa la funzione API per ottenere le candidature inviate dall'utente autenticato.
-import { getCandidatureFatte as getMyApplications } from '../services/api/candidatureService.js';
+import { getCandidatureFatte as getMyApplicationsApi } from '../services/api/candidatureService.js'; // Rinominato per chiarezza
 // Importa Link da react-router-dom per permettere la navigazione, ad esempio, alla pagina degli annunci.
 import { Link } from 'react-router-dom';
+// Importa l'hook useAuth per accedere ai dati dell'utente (in particolare l'email).
+import useAuth from '../hooks/useAuth';
 
 // Definizione del componente funzionale MyApplicationsPage.
 // Questa pagina mostra all'utente 'applier' la lista delle candidature che ha inviato.
@@ -16,15 +18,22 @@ const MyApplicationsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   // Stato per memorizzare eventuali messaggi di errore.
   const [error, setError] = useState('');
+  // Estrae l'utente dal contesto di autenticazione.
+  const { user } = useAuth();
 
   // Funzione memoizzata (useCallback) per recuperare le candidature dell'utente dal backend.
   const fetchMyApplications = useCallback(async () => {
+    if (!user?.email) {
+      setError('Impossibile recuperare le candidature: utente non identificato o email mancante.');
+      setIsLoading(false);
+      setApplications([]);
+      return;
+    }
     setIsLoading(true); // Inizia il caricamento.
     setError('');       // Resetta errori precedenti.
     try {
-      // Chiama la funzione getMyApplications del servizio API.
-      // L'endpoint backend dovrebbe essere protetto e restituire solo le candidature dell'utente autenticato.
-      const response = await getMyApplications();
+      // Chiama la funzione getMyApplicationsApi del servizio API. Non è più necessario passare user.email.
+      const response = await getMyApplicationsApi();
       // Imposta lo stato 'applications' con i dati ricevuti (o un array vuoto se response.data è null/undefined).
       setApplications(response.data || []);
     } catch (err) {
@@ -36,12 +45,12 @@ const MyApplicationsPage = () => {
       if (err.response?.status === 404) setApplications([]);
     }
     setIsLoading(false); // Termina il caricamento.
-  }, []); // Array di dipendenze vuoto: la funzione viene creata una sola volta.
+  }, [user]); // Aggiunta dipendenza 'user' per rieseguire se l'utente cambia.
 
-  // Hook useEffect per chiamare fetchMyApplications al montaggio del componente.
+  // Hook useEffect per chiamare fetchMyApplications al montaggio del componente o se l'utente cambia.
   useEffect(() => {
     fetchMyApplications();
-  }, [fetchMyApplications]); // Dipende da fetchMyApplications (che è memoizzata).
+  }, [fetchMyApplications]); // Dipende da fetchMyApplications (che ora dipende da user).
 
   // Se i dati sono in caricamento, mostra uno spinner e un messaggio.
   if (isLoading) {

@@ -15,10 +15,11 @@ export const getCandidaturePerAnnuncio = async (postAnnunciId) => {
 //da non riscrivere sogni volta URL e headers
 //Inoltre, se in futuro vuoi aggiungere autenticazione, intercettori o altre impostazioni, ti basta modificarle in un solo posto (apiClient.js) e tutte le chiamate API le useranno automaticamente.
 
-export const getCandidatureFatte = async (email) =>{
-    return apiClient.get(`/candidature/lavoratore/${email}`);
+// Modificato: L'endpoint backend ora usa l'ID utente dalla sessione, non più l'email nel path.
+export const getCandidatureFatte = async () =>{
+    return apiClient.get(`/candidature/lavoratore`); // Rimosso :email dal path
 };
-//RIVEDERE QUESTO SOPRA NEL CASO
+
 //La funzione si collega al backend inviando una richiesta
 //GET all'endpoint /candidature/lavoratore/email.
 //La parte ${email} nel template literal inserisce il valore dell’email direttamente nell’URL.

@@ -18,10 +18,11 @@ router.post('/', ensureAuthenticated, ensureAuthorized(['azienda']), pubblicaLav
 
 router.get('/', riceviLavoro); 
 
+// Specific route for 'miei-annunci' must come before the parameterized ':id' route
+router.get('/miei-annunci', ensureAuthenticated, ensureAuthorized(['azienda']), riceviLavoroDaAzienda);
+
 router.get('/:id', riceviLavoroDaId);
 
 router.delete('/:id', ensureAuthenticated, ensureAuthorized(['azienda']), rimuoviLavoroDaId);
-
-router.get('/miei-annunci', ensureAuthenticated, ensureAuthorized(['azienda']), riceviLavoroDaAzienda);
 
 export default router 

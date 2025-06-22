@@ -4,26 +4,41 @@ import PostAnnunci from "../models/PostAnnunci.js";
 
 export const creazioneCandidature = async (req , res) => {
     try{
-      
-      const { postAnnunciId, emailCandidato, descrizioneCandidato} = req.body; //Estraiamo dal body della richiesta i dati della candidatura:
-// - postAnnunciId: è l'ID dell'annuncio di lavoro a cui ci si sta candidando. 
-//   Questo ID è stato generato automaticamente da MongoDB quando l'annuncio è stato creato.
-//   Viene usato per valorizzare il campo 'postAnnunci' nello schema Candidature.js, 
-//   che è un riferimento (_ref_) all'annuncio di lavoro.
+      // Assicurati che l'utente sia autenticato e abbia un ID e un'email
+      if (!req.user || !req.user._id || !req.user.email) {
+        return res.status(401).json({ message: "Utente non autenticato o dati utente mancanti." });
+      }
+
+      const { postAnnunciId, descrizioneCandidato, nome, cognome, numeroTelefono } = req.body;
+      const utenteId = req.user._id;
+      const emailCandidato = req.user.email;
 
       const esistenzaDelLavoro = await PostAnnunci.findById(postAnnunciId);
       if (!esistenzaDelLavoro){
        return res.status(404).json({ message: "Lavoro non trovato"});
       }
-      //passo i dati{} di req.body al costruttore Candidature()
+
+      // Controlla se l'utente si è già candidato per questo annuncio
+      const candidaturaEsistente = await Candidature.findOne({
+        postAnnunci: postAnnunciId,
+        utenteId: utenteId
+      });
+
+      if (candidaturaEsistente) {
+        return res.status(409).json({ message: "Ti sei già candidato a questo annuncio!" });
+      }
+
       const nuoveCandidature = new Candidature({
-        postAnnunci : postAnnunciId, //La candidatura non sarà collegata a nessun annuncio di lavoro. Non potrai sapere per quale annuncio è stata fatta quella candidatura.
-                                     //Se il campo non è obbligatorio, la candidatura verrà salvata ma senza riferimento all’annuncio
-        emailCandidato, 
-        descrizioneCandidato
+        postAnnunci : postAnnunciId,
+        utenteId: utenteId,
+        emailCandidato: emailCandidato,
+        descrizioneCandidato,
+        nome,
+        cognome,
+        numeroTelefono
       });
       const candidaturaSalvata = await nuoveCandidature.save();
-      res.status(201).json( candidaturaSalvata ); //è gia un {json}
+      res.status(201).json( candidaturaSalvata );
     } catch(error){
         res.status(500).json({ message: "Errore nella creazione della candidatura" , error: error.message});
     }
@@ -33,14 +48,18 @@ export const creazioneCandidature = async (req , res) => {
 
 export const visualizzazioneCandidatureFatte = async (req, res) => {
   try{
-    //qua nel caso fare .populate("postAnnunci")
-    
-    const candidature = await Candidature.find({ emailCandidato : req.params.email}).select("postAnnunci dataCandidatura");
+    if (!req.user || !req.user._id) {
+        return res.status(401).json({ message: "Utente non autenticato." });
+    }
+    // Cerca candidature per utenteId invece che per email param
+    const candidature = await Candidature.find({ utenteId : req.user._id})
+                                          .populate('postAnnunci', 'titolo azienda località') // Popola i dettagli dell'annuncio
+                                          .select("postAnnunci dataCandidatura descrizioneCandidato"); // Aggiungi altri campi se necessario
     //restituisce un array( vuoto se non trova nulla), non sarà mai undefined o null
     //conterrà il valore dell’email passato nell’URL del routes
     //Se l'array di candidature è vuoto allora è 0
     if(candidature.length === 0 ){
-      res.status(404).json({message: "Nessuna candidatura trovata per questo Candiadato"});
+      return res.status(404).json({message: "Nessuna candidatura trovata per questo Candiadato"}); // Aggiunto return
     }
     res.json(candidature);
   } catch(error) {
