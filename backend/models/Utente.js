@@ -29,8 +29,8 @@ const utenteSchema = new mongoose.Schema({
     
     tipoUtente: { 
         type: String,
-        enum: ['candidato', 'azienda'], 
-        required: true 
+        enum: ['candidato', 'azienda']
+        // required: true // Temporaneamente rimosso per permettere la creazione utente via OAuth senza ruolo immediato
     }
 });
 
