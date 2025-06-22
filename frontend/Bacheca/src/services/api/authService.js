@@ -52,3 +52,9 @@ export const getUtenteCorrente = async () => {
   return apiClient.get('/auth/me');
 };
 
+// Funzione asincrona per impostare il ruolo dell'utente.
+export const setUserRole = async (role) => {
+  // Effettua una richiesta POST all'endpoint '/auth/set-role' del backend.
+  // Invia il ruolo scelto nel corpo della richiesta.
+  return apiClient.post('/auth/set-role', { role });
+};

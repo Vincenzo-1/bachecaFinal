@@ -57,11 +57,22 @@ const OAuthCallbackPage = () => {
     if (!isLoading) {
         // Se l'utente è autenticato e l'oggetto user è valido.
         if (isAuthenticated && user) {
-            // Reindirizza l'utente alla dashboard appropriata in base al suo userType.
-            if (user.userType === 'azienda') {
-                navigate('/dashboard-azienda');
-            } else { // user.userType === 'applier' o default
-                navigate('/dashboard-applier');
+            // Controlla se tipoUtente è definito.
+            if (user.tipoUtente) {
+                // Reindirizza l'utente alla dashboard appropriata in base al suo userType.
+                if (user.tipoUtente === 'azienda') {
+                    navigate('/dashboard-azienda');
+                } else if (user.tipoUtente === 'candidato') {
+                    navigate('/dashboard-applier');
+                } else {
+                    // Caso imprevisto di tipoUtente, reindirizza a home con errore.
+                    console.warn('OAuth Callback: tipoUtente non riconosciuto:', user.tipoUtente);
+                    navigate('/?error=invalid_user_type');
+                }
+            } else {
+                // Se tipoUtente non è definito, reindirizza alla pagina di selezione ruolo.
+                console.log('OAuth Callback: tipoUtente non definito, reindirizzamento a /role-selection');
+                navigate('/role-selection');
             }
         } else {
             // Se, dopo il tentativo di refresh, l'utente non risulta autenticato o user è null,

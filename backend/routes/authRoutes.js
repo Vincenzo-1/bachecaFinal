@@ -57,6 +57,56 @@ router.get('/me', (req, res) => {
   }
 });
 
+// Middleware per verificare se l'utente è autenticato
+const ensureAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: 'Non autorizzato: Utente non autenticato' });
+};
+
+// Rotta POST per impostare il tipo di utente (ruolo)
+router.post('/set-role', ensureAuthenticated, async (req, res) => {
+  const { role } = req.body;
+  const userId = req.user.id;
+
+  if (!role || !['candidato', 'azienda'].includes(role)) {
+    return res.status(400).json({ message: 'Ruolo non valido o mancante.' });
+  }
+
+  try {
+    const utente = await Utente.findById(userId);
+    if (!utente) {
+      return res.status(404).json({ message: 'Utente non trovato.' });
+    }
+
+    // Controlla se il tipoUtente è già stato impostato
+    if (utente.tipoUtente && utente.tipoUtente !== '') {
+        // Se il tipoUtente è già impostato e diverso da un valore "vuoto" o "pending"
+        // potresti voler impedire la modifica o gestirla in modo specifico.
+        // Per ora, permettiamo l'aggiornamento, ma in uno scenario reale potresti volerlo bloccare.
+        // return res.status(403).json({ message: 'Il ruolo utente è già stato impostato e non può essere modificato.' });
+    }
+
+    utente.tipoUtente = role;
+    await utente.save();
+
+    // Restituisci l'utente aggiornato (o solo i campi necessari)
+    // Questo aiuta il frontend a aggiornare il suo stato utente.
+    res.json({
+        utente: {
+            id: utente.id,
+            email: utente.email,
+            mostraNome: utente.mostraNome,
+            tipoUtente: utente.tipoUtente
+        }
+    });
+
+  } catch (error) {
+    console.error('Errore durante l_impostazione del ruolo utente:', error);
+    res.status(500).json({ message: 'Errore interno del server durante l_impostazione del ruolo.' });
+  }
+});
 
 
 // Rotta POST per il logout dell'utente.

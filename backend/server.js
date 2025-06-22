@@ -36,7 +36,7 @@ app.use(session({
     secure: process.env.NODE_ENV === "production", // Imposta il cookie come sicuro solo in produzione (HTTPS) 
     /*Se l'app è in ambiente di produzione (cioè quando la variabile d’ambiente NODE_ENV è settata su "production"),
     allora il cookie di sessione sarà marcato come "secure", cioè verrà inviato dal browser al server SOLO se la connessione è HTTPS, cioè una connessione criptata e sicura. Dal momento che il nostro node_env = development, Il cookie non sarà marcato come secure, ma sarà inviato anche su connessioni HTTP (tipico in ambiente di sviluppo).*/
-
+    sameSite: 'Lax', // Aggiunto per una politica SameSite esplicita, buona per la maggior parte degli scenari.
     httpOnly: true,     //L'attributo httpOnly serve per evitare che js possa accedere ai cookie
     maxAge: 24 * 60 * 60 * 1000 // 24 ore in millisecondi, dopodiché il cookie scade e l'utente deve effettuare nuovamente il login.
   }
