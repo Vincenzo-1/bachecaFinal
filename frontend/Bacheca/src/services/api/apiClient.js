@@ -19,7 +19,9 @@ const apiClient = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json'
-    } //application indica
+    },
+    withCredentials: true // Aggiunto per inviare i cookie con le richieste cross-origin
+    //application indica
     //che è un tipo di dato generico usato da applicazioni 
     //(non testo, non immagini,...). /json indica il formato dei dati
     //standard MIME /json . La / per separare tipo e sottotipo

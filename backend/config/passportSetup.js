@@ -51,8 +51,8 @@ pippo: profile.id
         utente = await Utente.create({
           googleId: profile.id,                 // ID Google del profilo.
           email: profile.emails[0].value,       // Email principale dell'utente (la prima nell'array emails).
-          mostraNome: profile.displayName,      // Nome visualizzato dall'utente su Google.
-          tipoUtente: "candidato"               // Placeholder per tipoUtente; da gestire meglio.
+          mostraNome: profile.displayName      // Nome visualizzato dall'utente su Google.
+          // tipoUtente non viene impostato qui, sarà impostato dall'utente nella pagina di selezione ruolo.
         });
         //Quando usi Passport con Google, il profilo dell’utente (profile) contiene un array di email, perché un account Google può avere più email associate.
         //profile.emails è un array di oggetti email.

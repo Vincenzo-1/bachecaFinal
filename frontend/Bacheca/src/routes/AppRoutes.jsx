@@ -9,7 +9,7 @@ import React from 'react';
 // Link: Componente per la navigazione dichiarativa tra le rotte (come un tag <a> ma per React Router).
 // Navigate: Componente per reindirizzare programmaticamente a un'altra rotta.
 // Outlet: Componente utilizzato nelle rotte "layout" o "genitore" per renderizzare i componenti figli definiti nelle rotte annidate.
-import { BrowserRouter as Router, Routes, Route, Link, Navigate, Outlet } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, Outlet } from 'react-router-dom';
 
 // Importa l'hook personalizzato useAuth per accedere al contesto di autenticazione.
 import useAuth from '../hooks/useAuth';
@@ -24,7 +24,7 @@ import ViewApplicantsPage from '../pages/ViewApplicantsPage';
 import ApplierDashboardPage from '../pages/ApplierDashboardPage';
 import JobListingsPage from '../pages/JobListingsPage';
 import MyApplicationsPage from '../pages/MyApplicationsPage';
-import Utente from '../../../../backend/models/Utente';
+import RoleSelectionPage from '../pages/RoleSelectionPage'; // Importa la nuova pagina
 
 // Componente placeholder per la pagina 404 Not Found.
 // Viene visualizzato quando nessuna altra rotta corrisponde all'URL corrente.
@@ -53,7 +53,7 @@ const ProtectedRoute = ({ allowedUserTypes }) => {
 
   // Se la rotta richiede specifici tipi di utente (allowedUserTypes è fornito)
   // e il tipo dell'utente corrente (user?.userType) non è incluso tra quelli permessi.
-  if (allowedUserTypes && !allowedUserTypes.includes(utente?.tipoUtente)) {
+  if (allowedUserTypes && !allowedUserTypes.includes(user?.tipoUtente)) {
     // Reindirizza l'utente alla pagina principale (HomePage).
     // Questo impedisce l'accesso a rotte non autorizzate per il tipo di utente.
     return <Navigate to="/" replace />;
@@ -68,42 +68,49 @@ const ProtectedRoute = ({ allowedUserTypes }) => {
 // Componente AppRoutes: definisce la struttura di routing principale dell'applicazione.
 const AppRoutes = () => {
   return (
-    // Router (BrowserRouter) avvolge tutte le definizioni di rotte.
-    <Router>
-      {/* Routes contiene tutte le definizioni <Route>. */}
-      <Routes>
-        {/* Definizioni delle Rotte Pubbliche: accessibili a tutti gli utenti. */}
-        <Route path="/" element={<HomePage />} /> {/* Rotta per la pagina principale. */}
-        <Route path="/annunci" element={<JobListingsPage />} /> {/* Rotta per la lista pubblica degli annunci. */}
-        <Route path="/oauth-callback" element={<OAuthCallbackPage />} /> {/* Rotta per gestire il callback di OAuth. */}
+    // Routes contiene tutte le definizioni <Route>.
+    // Il <BrowserRouter> è ora fornito in main.jsx
+    <Routes>
+      {/* Definizioni delle Rotte Pubbliche: accessibili a tutti gli utenti. */}
+      <Route path="/" element={<HomePage />} /> {/* Rotta per la pagina principale. */}
+      <Route path="/annunci" element={<JobListingsPage />} /> {/* Rotta per la lista pubblica degli annunci. */}
+      <Route path="/oauth-callback" element={<OAuthCallbackPage />} /> {/* Rotta per gestire il callback di OAuth. */}
 
-        {/* Gruppo di Rotte Protette per utenti di tipo 'azienda'. */}
-        {/* Utilizza ProtectedRoute come elemento "layout" o "genitore". */}
-        {/* Tutte le rotte annidate qui dentro erediteranno la protezione. */}
-        <Route element={<ProtectedRoute allowedUserTypes={['azienda']} />}>
-          {/* Rotta per la dashboard dell'azienda. */}
-          <Route path="/dashboard-azienda" element={<CompanyDashboardPage />} />
-          {/* Rotta per visualizzare gli annunci pubblicati dall'azienda. */}
-          <Route path="/dashboard-azienda/annunci" element={<ViewCompanyJobsPage />} />
-          {/* Rotta per creare un nuovo annuncio. */}
-          <Route path="/crea-annuncio" element={<CreateJobPage />} />
-          {/* Rotta per visualizzare i candidati per un annuncio specifico. ':id' è un parametro URL. */}
-          <Route path="/annuncio/:id/candidati" element={<ViewApplicantsPage />} />
-        </Route>
+      {/* Rotta per la selezione del ruolo utente.
+          Questa rotta dovrebbe essere protetta da un utente autenticato.
+          ProtectedRoute qui può essere usato per garantire che solo utenti autenticati la vedano.
+          La logica interna a RoleSelectionPage poi gestirà il caso in cui un ruolo sia già stato scelto.
+      */}
+      <Route element={<ProtectedRoute allowedUserTypes={null} />}> {/* allowedUserTypes={null} o omesso per solo controllo auth */}
+        <Route path="/role-selection" element={<RoleSelectionPage />} />
+      </Route>
 
-        {/* Gruppo di Rotte Protette per utenti di tipo 'applier' (candidato). */}
-        <Route element={<ProtectedRoute allowedUserTypes={['applier']} />}>
-          {/* Rotta per la dashboard del candidato. */}
-          <Route path="/dashboard-applier" element={<ApplierDashboardPage />} />
-          {/* Rotta per visualizzare le candidature inviate dal candidato. */}
-          <Route path="/mie-candidature" element={<MyApplicationsPage />} />
-        </Route>
+      {/* Gruppo di Rotte Protette per utenti di tipo 'azienda'. */}
+      {/* Utilizza ProtectedRoute come elemento "layout" o "genitore". */}
+      {/* Tutte le rotte annidate qui dentro erediteranno la protezione. */}
+      <Route element={<ProtectedRoute allowedUserTypes={['azienda']} />}>
+        {/* Rotta per la dashboard dell'azienda. */}
+        <Route path="/dashboard-azienda" element={<CompanyDashboardPage />} />
+        {/* Rotta per visualizzare gli annunci pubblicati dall'azienda. */}
+        <Route path="/dashboard-azienda/annunci" element={<ViewCompanyJobsPage />} />
+        {/* Rotta per creare un nuovo annuncio. */}
+        <Route path="/crea-annuncio" element={<CreateJobPage />} />
+        {/* Rotta per visualizzare i candidati per un annuncio specifico. ':id' è un parametro URL. */}
+        <Route path="/annuncio/:id/candidati" element={<ViewApplicantsPage />} />
+      </Route>
 
-        {/* Rotta Catch-all (o Not Found): se nessuna delle rotte precedenti corrisponde. */}
-        {/* Il path "*" cattura qualsiasi URL non precedentemente abbinato. */}
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Router>
+      {/* Gruppo di Rotte Protette per utenti di tipo 'applier' (candidato). */}
+      <Route element={<ProtectedRoute allowedUserTypes={['applier']} />}>
+        {/* Rotta per la dashboard del candidato. */}
+        <Route path="/dashboard-applier" element={<ApplierDashboardPage />} />
+        {/* Rotta per visualizzare le candidature inviate dal candidato. */}
+        <Route path="/mie-candidature" element={<MyApplicationsPage />} />
+      </Route>
+
+      {/* Rotta Catch-all (o Not Found): se nessuna delle rotte precedenti corrisponde. */}
+      {/* Il path "*" cattura qualsiasi URL non precedentemente abbinato. */}
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
   );
 };
 
