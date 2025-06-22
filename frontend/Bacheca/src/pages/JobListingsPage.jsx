@@ -30,8 +30,11 @@ const JobListingsPage = () => {
   const [showApplyModal, setShowApplyModal] = useState(false);
   // - selectedJobId: memorizza l'ID dell'annuncio per cui l'utente sta per candidarsi.
   const [selectedJobId, setSelectedJobId] = useState(null);
-  // - applicationDescription: memorizza il testo inserito dall'utente nella textarea della modale.
-  const [applicationDescription, setApplicationDescription] = useState('');
+  // Campi del form di candidatura
+  const [applicationNome, setApplicationNome] = useState('');
+  const [applicationCognome, setApplicationCognome] = useState('');
+  const [applicationNumeroTelefono, setApplicationNumeroTelefono] = useState('');
+  const [applicationDescription, setApplicationDescription] = useState(''); // Lettera motivazionale / Descrizione
   // - applicationError: memorizza eventuali messaggi di errore relativi all'invio della candidatura.
   const [applicationError, setApplicationError] = useState('');
   // - isSubmittingApplication: booleano per indicare se la candidatura è in fase di invio.
@@ -58,6 +61,9 @@ const JobListingsPage = () => {
   // Imposta l'ID dell'annuncio selezionato e resetta i campi della modale.
   const handleShowApplyModal = (jobId) => {
     setSelectedJobId(jobId);
+    setApplicationNome(user?.displayName?.split(' ')[0] || ''); // Precompila nome se possibile
+    setApplicationCognome(user?.displayName?.split(' ').slice(1).join(' ') || ''); // Precompila cognome se possibile
+    setApplicationNumeroTelefono('');
     setApplicationDescription('');
     setApplicationError('');
     setShowApplyModal(true);
@@ -74,25 +80,49 @@ const JobListingsPage = () => {
   const handleApplicationSubmit = async (e) => {
     e.preventDefault(); // Previene ricaricamento pagina.
     // Validazione semplice: la descrizione non deve essere vuota.
+    // Si potrebbero aggiungere validazioni per nome, cognome, telefono se resi obbligatori.
     if (!applicationDescription.trim()) {
-      setApplicationError('La descrizione della candidatura è obbligatoria.');
+      setApplicationError('La descrizione/lettera motivazionale è obbligatoria.');
       return;
     }
+    if (!applicationNome.trim()) {
+      setApplicationError('Il nome è obbligatorio.');
+      return;
+    }
+    if (!applicationCognome.trim()) {
+      setApplicationError('Il cognome è obbligatorio.');
+      return;
+    }
+    // Numero di telefono potrebbe essere opzionale lato frontend, ma validato se inserito
     setApplicationError(''); // Resetta errori.
     setIsSubmittingApplication(true); // Inizia sottomissione.
     try {
-      // Chiama la funzione API createApplication con l'ID dell'annuncio e la descrizione.
+      // L'emailCandidato è già parte di req.user sul backend e viene aggiunto lì.
+      if (!user) { // user.email check is already done in backend, but good to have user check
+        setApplicationError('Impossibile identificare l_utente. Assicurati di aver effettuato il login.');
+        setIsSubmittingApplication(false);
+        return;
+      }
       await createApplication({
         postAnnunciId: selectedJobId,
+        nome: applicationNome,
+        cognome: applicationCognome,
+        numeroTelefono: applicationNumeroTelefono,
         descrizioneCandidato: applicationDescription
+        // emailCandidato non è più necessario inviarlo esplicitamente dal frontend se il backend lo prende da req.user
       });
       handleCloseApplyModal(); // Chiude la modale.
       alert('Candidatura inviata con successo!'); // Messaggio di successo.
       // TODO: Si potrebbe disabilitare il pulsante "Candidati Ora" per questo specifico annuncio
       //       dopo una candidatura andata a buon fine, per evitare candidature multiple.
     } catch (err) {
-      console.error('Errore invio candidatura:', err.response?.data || err.message);
-      setApplicationError(err.response?.data?.message || 'Errore durante l_invio della candidatura.');
+      console.error('Errore invio candidatura:', err.response?.data || err.message, err.response?.status);
+      if (err.response?.status === 409) { // 409 Conflict for duplicate application
+        handleCloseApplyModal(); // Chiudi il form
+        alert(err.response.data.message); // Mostra il messaggio specifico dal backend
+      } else {
+        setApplicationError(err.response?.data?.message || 'Errore durante l_invio della candidatura.');
+      }
     }
     setIsSubmittingApplication(false); // Termina sottomissione.
   };
@@ -144,17 +174,26 @@ const JobListingsPage = () => {
                       Pubblicato il: {new Date(job.dataPubblicazione).toLocaleDateString()}
                     </small>
                   </p>
-                  {/* Se l'utente è autenticato e di tipo 'applier', mostra il pulsante "Candidati Ora". */}
-                  {isAuthenticated && user?.userType === 'applier' && (
+                  {/* Se l'utente è autenticato e di tipo 'candidato', mostra il pulsante "Candidati Ora". */}
+                  {isAuthenticated && user?.tipoUtente === 'candidato' && (
                     <button onClick={() => handleShowApplyModal(job._id)} className="btn btn-success mt-auto align-self-start">
                       <i className="bi bi-send-check-fill me-2"></i>Candidati Ora
                     </button>
                   )}
-                  {/* Se l'utente non è autenticato o non è 'applier', mostra un link per fare login. */}
-                  {(!isAuthenticated || (isAuthenticated && user?.userType !== 'applier')) && (
-                     <Link to="/login" className="btn btn-outline-primary mt-auto align-self-start">
-                        <i className="bi bi-box-arrow-in-right me-2"></i>Accedi per Candidarti
-                    </Link>
+                  {/* Se l'utente non è autenticato, mostra testo "Accedi per candidarti". */}
+                  {!isAuthenticated && (
+                    <p className="text-muted mt-auto align-self-start">
+                        <i className="bi bi-box-arrow-in-right me-2"></i>Accedi per candidarti
+                    </p>
+                  )}
+                  {/* Se l'utente è autenticato ma non è 'candidato' (es. è 'azienda'), mostra testo "Accedi Ora". */}
+                  {isAuthenticated && user?.tipoUtente !== 'candidato' && (
+                    <p className="text-muted mt-auto align-self-start">
+                        {/* L'icona potrebbe non essere necessaria qui, o potrebbe essere diversa.
+                            Per ora, la rimuovo per semplice testo come da richiesta "metti soltanto la scritta".
+                            Se si vuole un link per il login, si può avvolgere in <Link to="/login"> */}
+                        Accedi Ora
+                    </p>
                   )}
                 </div>
               </div>
@@ -173,20 +212,52 @@ const JobListingsPage = () => {
           <Modal.Body> {/* Corpo della modale. */}
             {/* Visualizza eventuali errori specifici della sottomissione della candidatura. */}
             {applicationError && <Alert variant="danger">{applicationError}</Alert>}
-            <Form.Group className="mb-3"> {/* Gruppo di controlli del form Bootstrap. */}
-              <Form.Label>Messaggio/Descrizione Candidatura</Form.Label>
+            <Form.Group className="mb-3">
+              <Form.Label>Nome</Form.Label>
               <Form.Control
-                as="textarea" // Tipo di input: textarea.
-                rows={5}      // Numero di righe visibili.
+                type="text"
+                placeholder="Il tuo nome"
+                value={applicationNome}
+                onChange={(e) => setApplicationNome(e.target.value)}
+                required
+                disabled={isSubmittingApplication}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Cognome</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Il tuo cognome"
+                value={applicationCognome}
+                onChange={(e) => setApplicationCognome(e.target.value)}
+                required
+                disabled={isSubmittingApplication}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Numero di Telefono (Opzionale)</Form.Label>
+              <Form.Control
+                type="tel"
+                placeholder="Il tuo numero di telefono"
+                value={applicationNumeroTelefono}
+                onChange={(e) => setApplicationNumeroTelefono(e.target.value)}
+                disabled={isSubmittingApplication}
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Lettera Motivazionale / Descrizione</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={5}
                 placeholder="Inserisci una breve presentazione o perché sei interessato/a..."
-                value={applicationDescription} // Valore legato allo stato.
-                onChange={(e) => setApplicationDescription(e.target.value)} // Aggiorna stato al cambio.
-                required // Campo obbligatorio.
-                disabled={isSubmittingApplication} // Disabilitato durante l'invio.
+                value={applicationDescription}
+                onChange={(e) => setApplicationDescription(e.target.value)}
+                required
+                disabled={isSubmittingApplication}
               />
             </Form.Group>
           </Modal.Body>
-          <Modal.Footer> {/* Piè di pagina della modale. */}
+          <Modal.Footer>
             {/* Pulsante per annullare/chiudere la modale. */}
             <Button variant="secondary" onClick={handleCloseApplyModal} disabled={isSubmittingApplication}>
               Annulla

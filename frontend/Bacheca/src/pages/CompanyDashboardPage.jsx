@@ -60,7 +60,7 @@ const CompanyDashboardPage = () => {
         {/* Piè di pagina della card, con testo attenuato. */}
         <div className="card-footer text-muted">
           {/* Mostra il tipo di utente loggato, per conferma. */}
-          Tipo Utente: {user?.userType}
+          {user?.tipoUtente}
         </div>
       </div>
     </div>

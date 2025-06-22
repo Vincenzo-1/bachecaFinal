@@ -5,7 +5,7 @@ import React from 'react';
 // Importa il componente Link da react-router-dom per la navigazione dichiarativa.
 import { Link } from 'react-router-dom';
 // Importa l'hook personalizzato useAuth per accedere ai dati dell'utente autenticato.
-import useAuth from '../hooks/useAuth';
+import useAuth from '../hooks/useAuth.js'; // Ensured .js extension and correct path
 
 // Definizione del componente funzionale ApplierDashboardPage.
 // Questa pagina serve come pannello di controllo per gli utenti di tipo 'applier' (candidati).
@@ -38,22 +38,21 @@ const ApplierDashboardPage = () => {
           <hr />
           {/* Contenitore per i pulsanti di azione, con classi Bootstrap per layout flex. */}
           <div className="d-grid gap-2 d-md-flex justify-content-md-start">
-            {/* Link alla pagina che elenca tutti gli annunci di lavoro ('/annunci').
-                Stilizzato come pulsante primario Bootstrap. Include un'icona. */}
-            <Link to="/annunci" className="btn btn-primary me-md-2 mb-2 mb-md-0">
-              <i className="bi bi-card-list me-2"></i>Sfoglia Tutti gli Annunci
-            </Link>
             {/* Link alla pagina dove l'utente può visualizzare le proprie candidature inviate ('/mie-candidature').
                 Stilizzato come pulsante informativo Bootstrap. Include un'icona. */}
-            <Link to="/mie-candidature" className="btn btn-info">
+            <Link to="/mie-candidature" className="btn btn-info me-md-2 mb-2 mb-md-0">
               <i className="bi bi-file-earmark-text me-2"></i>Le Mie Candidature
+            </Link>
+            {/* Bottone "Sfoglia Tutti gli Annunci" aggiunto qui */}
+            <Link to="/annunci" className="btn btn-primary">
+              <i className="bi bi-card-list me-2"></i>Sfoglia Tutti gli Annunci
             </Link>
           </div>
         </div>
         {/* Piè di pagina della card, con testo attenuato. */}
         <div className="card-footer text-muted">
           {/* Mostra il tipo di utente loggato, per conferma. */}
-          Tipo Utente: {user?.userType}
+          {user?.tipoUtente}
         </div>
       </div>
     </div>

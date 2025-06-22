@@ -31,20 +31,19 @@ export const ensureAuthenticated = (req, res, next) => {
 
 export const ensureAuthorized = (tipoAutorizzato) => {
     return (req, res, next) => {
-         // Controlla se l'oggetto req.user esiste (l'utente è autenticato) e se ha una proprietà userType.
-         // req.utente è popolato da Passport dopo un'autenticazione riuscita (non direttamente da mongo), non di mongo
-        if (!req.utente || !req.utente.tipoUtente) {
-            return res.status(403).json({ message: "Autorizzazione fallita: utente non autenticato" });
-             // Se non matcha utente o userType, invia una risposta di errore
+         // Controlla se l'oggetto req.user esiste (l'utente è autenticato) e se ha una proprietà tipoUtente.
+         // req.user è popolato da Passport dopo un'autenticazione riuscita e deve contenere il campo come da schema Utente.js.
+        if (!req.user || !req.user.tipoUtente) { // Corretto per usare req.user.tipoUtente
+            return res.status(403).json({ message: "Autorizzazione fallita: utente non autenticato o tipo utente mancante" });
+             // Se non matcha utente o tipoUtente, invia una risposta di errore
         }
         //Usa sempre includes per controllare se un valore è presente in un array.
-        //Usa === solo per confrontare due valori (es: due stringhe).
-        //tipoAutorizzato è un array che può essere o candidato o azienda
-        //mentre tipoUtente può essere o uno o l'altro (una stringa)
+        //tipoAutorizzato è un array che può essere o 'azienda' o 'candidato' (come da schema Utente.js).
+        //mentre req.user.tipoUtente sarà una stringa come 'azienda' o 'candidato'.
         
         //controlla se il tipoUtente dell'utente autenticato è incluso nell'array tipoAutorizzato
-        if (tipoAutorizzato.includes(req.utente.tipoUtente)) {
-              // Se lo userType è consentito, passa al prossimo middleware o al gestore della rotta.
+        if (tipoAutorizzato.includes(req.user.tipoUtente)) { // Corretto per usare req.user.tipoUtente
+              // Se lo tipoUtente è consentito, passa al prossimo middleware o al gestore della rotta.
             return next(); // L'utente ha il tipo corretto, prosegui
         }
         else {

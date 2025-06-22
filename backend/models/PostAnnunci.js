@@ -20,6 +20,11 @@ const postAnnunciSchema = new mongoose.Schema({
     dataPubblicazione: {
         type: Date,
         default: Date.now
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Utente', // Riferimento al modello Utente
+        required: [true, "Autore dell'annuncio (createdBy) è obbligatorio"]
     }
 });
 

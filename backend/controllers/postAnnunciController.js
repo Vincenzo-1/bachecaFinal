@@ -4,11 +4,16 @@ import PostAnnunci from "../models/PostAnnunci.js";
 
 export const pubblicaLavoro = async (req, res) =>{try {
     const {titolo, azienda, descrizione, località} = req.body;
+    // Assicurati che req.user sia disponibile e contenga l'ID dell'utente autenticato
+    if (!req.user || !req.user._id) {
+        return res.status(401).json({ message: "Utente non autenticato o ID utente non trovato." });
+    }
     const newPostAnnunci = new PostAnnunci({
         titolo,
-        azienda,
+        azienda, // Considera se 'azienda' debba essere precompilato dal profilo dell'utente azienda
         descrizione,
-        località
+        località,
+        createdBy: req.user._id // Associa l'annuncio all'utente che lo crea
     });
 const annunciSalvati = await newPostAnnunci.save();
 res.status(201).json(annunciSalvati); //201 Created indica che la richiesta è andata a buon fine e ha portato alla creazione di una nuova risorsa.
@@ -61,7 +66,7 @@ export const rimuoviLavoroDaId = async(req, res) => {
 export const riceviLavoroDaAzienda = async (req, res) => {
   try {
     // Ottiene l'ID dell'utente (azienda) autenticato dalla richiesta (req.user.id).
-    const utenteId = req.utente.id;
+    const utenteId = req.user.id; // Modificato da req.utente.id a req.user.id
     // Cerca tutti gli annunci nel database dove il campo 'createdBy' corrisponde all'ID dell'utente.
     // Popola i dettagli del creatore (opzionale, ma può essere utile per conferma).
     // Ordina gli annunci per data di pubblicazione decrescente.
