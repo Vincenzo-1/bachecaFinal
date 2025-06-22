@@ -99,10 +99,10 @@ const AppRoutes = () => {
         <Route path="/annuncio/:id/candidati" element={<ViewApplicantsPage />} />
       </Route>
 
-      {/* Gruppo di Rotte Protette per utenti di tipo 'applier' (candidato). */}
-      <Route element={<ProtectedRoute allowedUserTypes={['applier']} />}>
+      {/* Gruppo di Rotte Protette per utenti di tipo 'candidato'. */}
+      <Route element={<ProtectedRoute allowedUserTypes={['candidato']} />}>
         {/* Rotta per la dashboard del candidato. */}
-        <Route path="/dashboard-applier" element={<ApplierDashboardPage />} />
+        <Route path="/dashboard-candidato" element={<ApplierDashboardPage />} />
         {/* Rotta per visualizzare le candidature inviate dal candidato. */}
         <Route path="/mie-candidature" element={<MyApplicationsPage />} />
       </Route>
